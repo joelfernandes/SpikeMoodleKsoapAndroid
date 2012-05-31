@@ -33,16 +33,7 @@ public interface IMoodle {
 	 * @return the key or null if authentication fails
 	 */
 	public String getAuthorizationKey(String username, String password, String deviceIdentification);
-	
-	/**
-	 * Get the course categories from the system
-	 * 
-	 * @param uedCredentials
-	 * @param parentId
-	 * @return the course categories
-	 */
-	public List<UedCourseCategory> getCategories(UedCredentials uedCredentials, int parentId);
-	
+
 	/**
 	 * Return the recent enrolments in a course
 	 * 
@@ -75,14 +66,6 @@ public interface IMoodle {
 			int courseId, UedDate uedStartDate);
 	
 	/**
-	 * Get the courses from a category on the system
-	 * @param uedCredentials
-	 * @param categoryId
-	 * @return
-	 */
-	public List<UedCourse> getCourses(UedCredentials uedCredentials, int categoryId);
-	
-	/**
 	 * Get the courses of the user
 	 * @param uedCredentials
 	 * @return a list with the courses from authenticated student
@@ -95,13 +78,6 @@ public interface IMoodle {
 	 * @return the profile of the authenticated user
 	 */
 	public UedUser getMyUserPublicProfile (UedCredentials uedCredentials);
-	
-	/**
-	 * Get the courses of the user
-	 * @param uedCredentials
-	 * @return the course of a given username
-	 */
-	public List<UedCourseFull> getUserCourses (UedCredentials uedCredentials, String username);
 	
 	/**
 	 * Get the public profile of a specific user

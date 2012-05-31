@@ -97,34 +97,6 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	/* Throws an error */
-	public List<UedCourseCategory> getCategories(UedCredentials uedCredentials, int parentId) {
-		String methodName = "getCategories";
-		soapAction = NAMESPACE + methodName;
-		
-		Log.i(TAG, "calling method " + methodName);
-		
-		try {
-			SoapObject request = new SoapObject(NAMESPACE, methodName);
-	        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-	        envelope.dotNet = true;
-	        envelope.setOutputSoapObject(request);
-	        
-	        request.addProperty("credentials ", uedCredentials); 
-	        request.addProperty("parentid", parentId);
-	        
-	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
-	        androidHttpTransport.call(soapAction, envelope);
-	        
-	        String res = envelope.getResponse().toString();
-	        return null;
-		} catch (Exception e) {
-			RuntimeException ex = new RuntimeException(e.getCause());
-			ex.setStackTrace(e.getStackTrace());
-			throw ex;
-		}
-	}
-
 	public List<UedRecentEnrolment> getCourseRecentEnrolments(UedCredentials uedCredentials, int courseId,
 			UedDate uedStartDate) {
 		
@@ -244,42 +216,7 @@ public class Moodle implements IMoodle {
 			throw ex;
 		}
 	}
-
-	/* Throws an error */
-	public List<UedCourse> getCourses(UedCredentials uedCredentials, int categoryId) {
-		String methodName = "getCourses"; 
-		soapAction = NAMESPACE + methodName;
-		
-		Log.i(TAG, "calling method " + methodName);
-		
-		try { 
-			SoapObject request = new SoapObject(NAMESPACE, methodName);
-	        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-	        envelope.dotNet = true;
-	        envelope.setOutputSoapObject(request);
-	        
-	        request.addProperty("credentials", uedCredentials); 
-	        
-//	        PropertyInfo p1=new PropertyInfo(); 
-//            p1.name = "categoryid";
-//            p1.type = PropertyInfo.INTEGER_CLASS;
-//            request.addProperty(p1, categoryId);
-	        
-	        request.addProperty("categoryid", categoryId);
-	        
-	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
-	        androidHttpTransport.call(soapAction, envelope);
-	        
-	        String res = envelope.getResponse().toString();
-	        //boolean result = Boolean.parseBoolean(envelope.getResponse().toString());
-	        return null;
-		} catch (Exception e) {
-			RuntimeException ex = new RuntimeException(e.getCause());
-			ex.setStackTrace(e.getStackTrace());
-			throw ex;
-		}
-	}
-
+	
 	public List<UedCourseFull> getMyCourses(UedCredentials uedCredentials) {
 		String methodName = "getMyCourses"; 
 		soapAction = NAMESPACE + methodName;
@@ -343,45 +280,7 @@ public class Moodle implements IMoodle {
 			throw ex;
 		}
 	}
-
-	/* Throws an error */
-	public List<UedCourseFull> getUserCourses(UedCredentials uedCredentials, String username) {
-		String methodName = "getUserCourses"; 
-		soapAction = NAMESPACE + methodName;
-		
-		Log.i(TAG, "calling method " + methodName);
-		
-		List<UedCourseFull> list = new LinkedList<UedCourseFull>();
-		try { 
-			SoapObject request = new SoapObject(NAMESPACE, methodName);
-	        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-	        envelope.dotNet = true;
-	        envelope.setOutputSoapObject(request);
-	        
-	        request.addProperty("credentials", uedCredentials); 
-	        request.addProperty("username", username); 
-	        
-	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
-	        androidHttpTransport.call(soapAction, envelope);
-	        
-	        SoapObject res = (SoapObject) envelope.getResponse();
-	        
-	        UedCourseFull ucf;
-	        for (int i = 0; i < res.getPropertyCount(); i++) {
-	        	SoapObject obj = (SoapObject) res.getProperty(i);
-	        	
-	        	ucf = UedCourseFull.createfromSoapObject(obj);
-	        	list.add(ucf);
-	        }
-	        
-	        return list;
-		} catch (Exception e) {
-			RuntimeException ex = new RuntimeException(e.getCause());
-			ex.setStackTrace(e.getStackTrace());
-			throw ex;
-		}
-	}
-
+	
 	public UedUser getUserPublicProfile(UedCredentials uedCredentials, int userId, int courseId) {
 		String methodName = "getMyUserPublicProfile"; 
 		soapAction = NAMESPACE + methodName;

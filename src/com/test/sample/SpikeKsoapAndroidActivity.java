@@ -1,6 +1,5 @@
 package com.test.sample;
 
-import java.util.Calendar;
 import java.util.List;
 
 import android.app.Activity;
@@ -15,9 +14,7 @@ import com.test.sample.moodle.UedCourseFull;
 import com.test.sample.moodle.UedCredentials;
 import com.test.sample.moodle.UedDate;
 import com.test.sample.moodle.UedForumActivity;
-import com.test.sample.moodle.UedRecentEnrolment;
 import com.test.sample.moodle.UedRecentForumActivity;
-import com.test.sample.moodle.UedRecentModification;
 
 public class SpikeKsoapAndroidActivity extends Activity {
 	public static final String PREFERENCES = "PREFS";
@@ -90,24 +87,6 @@ public class SpikeKsoapAndroidActivity extends Activity {
 //						moodle.canInvokeMethod(uedCredentials, method));
 
 		
-		/* ******************** get categories from the system ******************** */
-		//FIXME API problem
-//		moodle.getCategories(uedCredentials, 9119);
-		
-		
-		/* ******************** Get courses from category ******************** */
-		// 3175 - Aan�lise Matem�tica
-		//FIXME API problem
-//		List<UedCourse> courses2 = moodle.getCourses(uedCredentials, new Integer(3175));
-//		if (courses2 != null) {
-//			Log.d("SAMPLE", "User courses: " + courses2.size());
-//			for (UedCourse ucf : courses2) {
-//				Log.d("SAMPLE", "Course: id=" + ucf.getId() + " category=" + ucf.getCategory() +
-//						" name=" + ucf.getFullName());
-//			}
-//		}
-		
-		
 		/* ******************** Convert UED date into timestamp ******************** */
 //		String timestamp = moodle.uedDateToUnixTimestamp(uedCredentials, courses.get(0).getStartDate());
 //		Log.d("SAMPEL", timestamp);
@@ -127,17 +106,6 @@ public class SpikeKsoapAndroidActivity extends Activity {
 //		UedUser uUser2 = moodle.getUserPublicProfile(uedCredentials, 1889, 3175);
 //		Log.d("SAMPLE", "Name: " + uUser2.getFullName() + " ID: " + uUser2.getId());
 		
-		
-		/* ******************** get couses from username ******************** */
-		//FIXME API problem
-//		List<UedCourseFull> courses2 = moodle.getUserCourses(uedCredentials, "2111136a");
-//		if (courses2 != null) {
-//			Log.d("SAMPLE", "User courses: " + courses2.size());
-//			for (UedCourseFull ucf : courses2) {
-//				Log.d("SAMPLE", "Course: id=" + ucf.getId() + " category=" + ucf.getCategory() +
-//						" name=" + ucf.getFullName());
-//			}
-//		}
 		
 		/* ******************** get course recent enrolment ******************** */
 		//TODO not the right way to test... what's wrong?
