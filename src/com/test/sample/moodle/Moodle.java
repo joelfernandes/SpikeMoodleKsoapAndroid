@@ -10,14 +10,68 @@ import org.ksoap2.transport.HttpTransportSE;
 
 import android.util.Log;
 
-public class Moodle implements IMoodle {
-	private String soapAction = ""; //SOAP_ACTION = NAMESPACE + METHOD_NAME;
-	private static final String TAG = "SAMPLE";
+public class Moodle {
+	public static final String NAMESPACE = "http://ead.ipleiria.pt/admin/report/uedws/";
+	public static final String URL = "http://ead.ipleiria.pt/admin/report/uedws/index.php";
+	private static final String TAG = "MOODLE";
+	
+	private String username;
+	private String password;
+	private String deviceId;
+	
+	private UedCredentials credentials;
 
-	public boolean canAccessToCourse(UedCredentials uedCredentials, int courseId) {
-		String methodName = "canAccessToCourse"; 
-		soapAction = NAMESPACE + methodName;
+	/**
+	 * Create a new Moodle Instance. Next Step: getAuthorizationKey()
+	 * @param username
+	 * @param password
+	 * @param deviceId
+	 */
+	public Moodle (String username, String password, String deviceId) {
+		if(username == null || password == null || deviceId == null) {
+			throw new NullPointerException("Must provide non null arguments in contructor" +
+					" Moodle(String, String, String");
+		}
 		
+		this.username = username;
+		this.password = password;
+		this.deviceId = deviceId;
+	}
+	
+	/**
+	 * Create a new Moodle Instance. This method will NOT call validate validateCredentials().
+	 * @param authorizationKey
+	 */
+	public Moodle(String username, String authorizationKey) {
+		if(username == null || authorizationKey == null) {
+			throw new NullPointerException("Neither username or auth key can be null");
+		}
+		this.username = username;
+		this.setCredentials(username, authorizationKey);
+	}
+	
+	/**
+	 * Create a new Moodle Instance. 
+	 * Next step: getAuthorizationKey(username, password, deviceId)
+	 */
+	public Moodle() {}
+	
+	/**
+	 * Verify if the user can access to the information of a specific course
+	 * 
+	 * @param uedCredentials
+	 * @param courseId
+	 * @return true or false if user can access a specific course
+	 */
+	public boolean canAccessToCourse(int courseId) {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
+		
+		String methodName = "canAccessToCourse"; 
+		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		try { 
@@ -26,7 +80,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        request.addProperty("courseId ", courseId ); 
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
@@ -41,10 +95,22 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public boolean canInvokeMethod(UedCredentials uedCredentials, String invokingMethodName) {
-		String methodName = "canInvokeMethod"; 
-		soapAction = NAMESPACE + methodName;
+	/**
+	 * Verify if the user can execute the specified method
+	 * 
+	 * @param uedCredentials
+	 * @param methodName
+	 * @return true if the user can access a given method
+	 */
+	public boolean canInvokeMethod(String invokingMethodName) {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
 		
+		String methodName = "canInvokeMethod"; 
+		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		try { 
@@ -53,7 +119,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        request.addProperty("methodName", invokingMethodName); 
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
@@ -68,10 +134,42 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public String getAuthorizationKey(String username, String password, String deviceIdentification) {
-		String methodName = "getAuthorizationKey";
-		soapAction = NAMESPACE + methodName;
+	/**
+	 * Request an autorization key to the webservice using the user credentials
+	 * 
+	 * @param username
+	 * @param password
+	 * @param deviceIdentification
+	 * @return the key or null if authentication fails
+	 */
+	public String getAuthorizationKey(String username, String password, String deviceId) {
+		if(username == null || password == null || deviceId == null) {
+			throw new NullPointerException("Must provide non null arguments in contructor" +
+					" Moodle(String, String, String");
+		}
 		
+		this.username = username;
+		this.password = password;
+		this.deviceId = deviceId;
+		
+		return getAuthorizationKey();
+	}
+	
+	/**
+	 * Request an autorization key to the webservice using the user credentials
+	 * 
+	 * @return the key or null if authentication fails
+	 */
+	public String getAuthorizationKey() {
+		if(username == null || password == null || deviceId == null) {
+			throw new NullPointerException("Must provide non null arguments in contructor" +
+					" Moodle(String, String, String");
+		}
+		
+		String methodName = "getAuthorizationKey";
+
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		try {
@@ -82,7 +180,7 @@ public class Moodle implements IMoodle {
 	        
 	        request.addProperty("username", username);
 	        request.addProperty("password", password);
-	        request.addProperty("deviceIdentification ", deviceIdentification);
+	        request.addProperty("deviceIdentification ", deviceId);
 	        
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
@@ -97,12 +195,23 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public List<UedRecentEnrolment> getCourseRecentEnrolments(UedCredentials uedCredentials, int courseId,
-			UedDate uedStartDate) {
+	/**
+	 * Return the recent enrolments in a course
+	 * 
+	 * @param uedCredentials
+	 * @param courseId
+	 * @param uedStartDate
+	 * @return recent enrolments within a course
+	 */
+	public List<UedRecentEnrolment> getCourseRecentEnrolments(int courseId, UedDate uedStartDate) {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
 		
 		String methodName = "getCourseRecentEnrolments"; 
-		soapAction = NAMESPACE + methodName;
 		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		List<UedRecentEnrolment> list = new LinkedList<UedRecentEnrolment>();
@@ -112,7 +221,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        request.addProperty("courseId", courseId); 
 	        request.addProperty("UedStartDate ", uedStartDate); 
 	        
@@ -137,12 +246,22 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public List<UedRecentForumActivity> getCourseRecentForumActivity(UedCredentials uedCredentials, int courseId,
-			UedDate uedStartDate) {
+	/**
+	 * Return the recent forum activity within a course
+	 * @param uedCredentials
+	 * @param courseId
+	 * @param uedStartDate
+	 * @return
+	 */
+	public List<UedRecentForumActivity> getCourseRecentForumActivity(int courseId, UedDate uedStartDate) {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
 		
-		String methodName = "getCourseRecentForumActivity"; 
-		soapAction = NAMESPACE + methodName;
+		String methodName = "getCourseRecentForumActivity";
 		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		List<UedRecentForumActivity> list = new LinkedList<UedRecentForumActivity>();
@@ -152,7 +271,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        request.addProperty("courseId", courseId); 
 	        request.addProperty("UedStartDate ", uedStartDate); 
 	        
@@ -177,12 +296,21 @@ public class Moodle implements IMoodle {
 		}
 	}
 	
-	public List<UedRecentModification> getCourseRecentModifications(UedCredentials uedCredentials, int courseId,
-			UedDate uedStartDate) {
+	/**
+	 * Return the recent modifications in a course
+	 * @param uedCredentials
+	 * @param courseId
+	 * @param uedStartDate
+	 * @return recent modifications within a course
+	 */
+	public List<UedRecentModification> getCourseRecentModifications(int courseId, UedDate uedStartDate) {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
 		
 		String methodName = "getCourseRecentModifications"; 
-		soapAction = NAMESPACE + methodName;
-		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		List<UedRecentModification> list = new LinkedList<UedRecentModification>();
@@ -192,7 +320,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        request.addProperty("courseId", courseId); 
 	        request.addProperty("UedStartDate ", uedStartDate); 
 	        
@@ -217,10 +345,20 @@ public class Moodle implements IMoodle {
 		}
 	}
 	
-	public List<UedCourseFull> getMyCourses(UedCredentials uedCredentials) {
-		String methodName = "getMyCourses"; 
-		soapAction = NAMESPACE + methodName;
+	/**
+	 * Get the courses of the user
+	 * @param uedCredentials
+	 * @return a list with the courses from authenticated student
+	 */
+	public List<UedCourseFull> getMyCourses() {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
 		
+		String methodName = "getMyCourses"; 
+		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		List<UedCourseFull> list = new LinkedList<UedCourseFull>();
@@ -230,7 +368,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
 	        androidHttpTransport.call(soapAction, envelope);
@@ -253,19 +391,29 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public UedUser getMyUserPublicProfile(UedCredentials uedCredentials) {
+	/**
+	 * Get the user profile
+	 * @param uedCredentials
+	 * @return the profile of the authenticated user
+	 */
+	public UedUser getMyUserPublicProfile() {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
+		
 		String methodName = "getMyUserPublicProfile"; 
-		soapAction = NAMESPACE + methodName;
 		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
-		
+				
 		try { 
 			SoapObject request = new SoapObject(NAMESPACE, methodName);
 	        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
 	        androidHttpTransport.call(soapAction, envelope);
@@ -281,42 +429,16 @@ public class Moodle implements IMoodle {
 		}
 	}
 	
-	public UedUser getUserPublicProfile(UedCredentials uedCredentials, int userId, int courseId) {
-		String methodName = "getMyUserPublicProfile"; 
-		soapAction = NAMESPACE + methodName;
-		
-		Log.i(TAG, "calling method " + methodName);
-		
-		try { 
-			SoapObject request = new SoapObject(NAMESPACE, methodName);
-	        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-	        envelope.dotNet = true;
-	        envelope.setOutputSoapObject(request);
-	        
-	        request.addProperty("credentials", uedCredentials); 
-	        request.addProperty("userId", userId); 
-	        request.addProperty("courseId", courseId); 
-	        
-	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
-	        androidHttpTransport.call(soapAction, envelope);
-	        
-	        SoapObject res = (SoapObject) envelope.getResponse();
-	        
-	        UedUser uUser = UedUser.createfromSoapObject(res);
-	        return uUser;
-		} catch (Exception e) {
-			RuntimeException ex = new RuntimeException(e.getCause());
-			ex.setStackTrace(e.getStackTrace());
-			throw ex;
-		}
-	}
-
+	/**
+	 * getVersion
+	 * @return the version of the webservice
+	 */
 	public String getVersion() {
 		String methodName = "getVersion";
-		soapAction = NAMESPACE + methodName;
-		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
-		
+				
 		try {
 			SoapObject Request = new SoapObject(NAMESPACE, methodName);
 	        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -334,12 +456,16 @@ public class Moodle implements IMoodle {
 		}
 	}
 
+	/**
+	 * Check is the webservice is enabled
+	 * @return true or false wether the webservice is enabled
+	 */
 	public boolean isWebserviceEnabled() throws RuntimeException {
 		String methodName = "isWebserviceEnabled";
-		soapAction = NAMESPACE + methodName;
-		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
-		
+				
 		try {
 			SoapObject Request = new SoapObject(NAMESPACE, methodName);
 	        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -358,10 +484,22 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public boolean revokeAuthorizationKey(UedCredentials uedCredentials, String deviceIdentification) {
-		String methodName = "revokeAuthorizationKey"; 
-		soapAction = NAMESPACE + methodName;
+	/**
+	 * Revoke the autorization key within the credentials object associated 
+	 * to the specified device identifier
+	 * @param uedCredentials
+	 * @param deviceIdentification
+	 * @return true or false wether authorization key was revoked
+	 */
+	public boolean revokeAuthorizationKey(String deviceIdentification) {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
 		
+		String methodName = "revokeAuthorizationKey"; 
+		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		try { 
@@ -370,7 +508,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        request.addProperty("deviceIdentification", deviceIdentification ); 
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
@@ -385,10 +523,21 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public String uedDateToUnixTimestamp(UedCredentials uedCredentials, UedDate uedDate) {
-		String methodName = "uedDateToUnixTimestamp";
-		soapAction = NAMESPACE + methodName;
+	/**
+	 * Convert an UedDate to an unix timestamp
+	 * @param uedCredentials
+	 * @param uedDate
+	 * @return unix representation of the provided ued date
+	 */
+	public String uedDateToUnixTimestamp(UedDate uedDate) {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
 		
+		String methodName = "uedDateToUnixTimestamp";
+		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		try {
@@ -397,7 +546,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        request.addProperty("uedDate ", uedDate); 
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
@@ -411,10 +560,21 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public UedDate unixTimestampToUedDate(UedCredentials uedCredentials, String timeStamp) {
-		String methodName = "unixTimestampToUedDate";
-		soapAction = NAMESPACE + methodName;
+	/**
+	 * Convert an unix timestamp to UedDate
+	 * @param uedCredentials
+	 * @param timeStamp
+	 * @return ued representation of the provided unix date
+	 */
+	public UedDate unixTimestampToUedDate(String timeStamp) {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
 		
+		String methodName = "unixTimestampToUedDate";
+		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
 		
 		try {
@@ -423,7 +583,7 @@ public class Moodle implements IMoodle {
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials); 
+	        request.addProperty("credentials", credentials); 
 	        request.addProperty("timeStamp ", timeStamp); 
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
@@ -440,19 +600,29 @@ public class Moodle implements IMoodle {
 		}
 	}
 
-	public boolean validateCredentials(UedCredentials uedCredentials) {
+	/**
+	 * Verify if the credentials are valid and can be used by the webservice
+	 * @param uedCredentials
+	 * @return true if credentials are valid, false otherwise
+	 */
+	public boolean validateCredentials() {
+		if(credentials == null) {
+			throw new InvalidCredentialsException();
+		}
+		
 		String methodName = "validateCredentials";
-		soapAction = NAMESPACE + methodName; 
 		
+		//SOAP_ACTION = NAMESPACE + METHOD_NAME;
+		String soapAction = NAMESPACE + methodName;
 		Log.i(TAG, "calling method " + methodName);
-		
+				
 		try {
 			SoapObject request = new SoapObject(NAMESPACE, methodName);
 	        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
 	        envelope.dotNet = true;
 	        envelope.setOutputSoapObject(request);
 	        
-	        request.addProperty("credentials", uedCredentials);
+	        request.addProperty("credentials", credentials);
 	        
 	    	HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
 	        androidHttpTransport.call(soapAction, envelope);
@@ -469,6 +639,70 @@ public class Moodle implements IMoodle {
 			ex.setStackTrace(e.getStackTrace());
 			throw ex;
 		}
+	}
+
+	/**
+	 * @return the credentials
+	 */
+	public UedCredentials getCredentials() {
+		return credentials;
+	}
+
+	/**
+	 * @param credentials the credentials to set
+	 */
+	public void setCredentials(UedCredentials credentials) {
+		this.credentials = credentials;
+	}
+	
+	/**
+	 * @param credentials the credentials to set
+	 */
+	public void setCredentials(String username, String authorizationKey) {
+		this.username = username;
+		this.credentials = new UedCredentials(username, authorizationKey);
+	}
+	
+	/**
+	 * @return the username
+	 */
+	public String getUsername() {
+		return username;
+	}
+
+	/**
+	 * @param username the username to set
+	 */
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	/**
+	 * @return the password
+	 */
+	public String getPassword() {
+		return password;
+	}
+
+	/**
+	 * @param password the password to set
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/**
+	 * @return the deviceId
+	 */
+	public String getDeviceId() {
+		return deviceId;
+	}
+
+	/**
+	 * @param deviceId the deviceId to set
+	 */
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
 	}
 	
 	

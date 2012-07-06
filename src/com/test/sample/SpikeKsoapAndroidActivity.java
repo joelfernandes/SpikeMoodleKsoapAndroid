@@ -22,9 +22,9 @@ public class SpikeKsoapAndroidActivity extends Activity {
 	
 	private SharedPreferences preferences;
 	
-	private String username = "your_username"; 
-	private String password = "your_password";
-	private String deviceId = "spooky";//"use_mac_addr_here";
+	private String username = "your-id"; 
+	private String password = "your-pwd"; 
+	private String deviceId = "potato"; //"use_some_unique_id_here";
 	private String sessionId = "";
 	private UedCredentials uedCredentials;
 	private Moodle moodle;
@@ -54,19 +54,20 @@ public class SpikeKsoapAndroidActivity extends Activity {
 		boolean validCredentials = false;
 		while (!validCredentials) {
 			//FIXME might generate an infinite loop!!!!
-			validCredentials = moodle.validateCredentials(uedCredentials);
+			validCredentials = moodle.validateCredentials();
 			Log.d("SAMPLE", "Credentials are valid: " + validCredentials);
 			
 			if (!validCredentials) {
 				getNewAuthenticationKey();
 				uedCredentials = new UedCredentials(username, sessionId);
+				moodle.setCredentials(uedCredentials);
 			}
 			
 		}
 		
 		
 		/* ******************** get authenticated user couses ******************** */
-		List<UedCourseFull> courses = moodle.getMyCourses(uedCredentials);
+		List<UedCourseFull> courses = moodle.getMyCourses();
 		if (courses != null) {
 			Log.d("SAMPLE", "User courses: " + courses.size());
 			for (UedCourseFull ucf : courses) {
@@ -78,32 +79,32 @@ public class SpikeKsoapAndroidActivity extends Activity {
 		
 		/* ******************** check if user has access to one specific course ******************** */
 		// 2126 - GPI 
-		//		Log.d("SAMPLE", "User can access GPI: " + moodle.canAccessToCourse(uedCredentials, 2126));
+		//		Log.d("SAMPLE", "User can access GPI: " + moodle.canAccessToCourse(2126));
 
 		
 		/* ******************** check if user has access to one method ******************** */
 //				String method = "getVersion"; 
 //				Log.d("SAMPLE", "Can access method " + method + ": " + 
-//						moodle.canInvokeMethod(uedCredentials, method));
+//						moodle.canInvokeMethod(method));
 
 		
 		/* ******************** Convert UED date into timestamp ******************** */
-//		String timestamp = moodle.uedDateToUnixTimestamp(uedCredentials, courses.get(0).getStartDate());
+//		String timestamp = moodle.uedDateToUnixTimestamp(courses.get(0).getStartDate());
 //		Log.d("SAMPEL", timestamp);
 		
 		
 		/* ******************** Convert timestamp into UED date ******************** */
-//		Log.d("SAMPLE", moodle.unixTimestampToUedDate(uedCredentials, timestamp).toString());
+//		Log.d("SAMPLE", moodle.unixTimestampToUedDate(timestamp).toString());
 		
 		
 		/* ******************** Get my user public profile ******************** */
-//		UedUser uUser = moodle.getMyUserPublicProfile(uedCredentials);
+//		UedUser uUser = moodle.getMyUserPublicProfile();
 //		Log.d("SAMPLE", "Name: " + uUser.getFullName() + " ID: " + uUser.getId());
 		
 		
 		/* ******************** Get a user specific public profile ******************** */
 		//Spooky mobile - ID 1889, AM - 3175
-//		UedUser uUser2 = moodle.getUserPublicProfile(uedCredentials, 1889, 3175);
+//		UedUser uUser2 = moodle.getUserPublicProfile(1889, 3175);
 //		Log.d("SAMPLE", "Name: " + uUser2.getFullName() + " ID: " + uUser2.getId());
 		
 		
@@ -112,7 +113,7 @@ public class SpikeKsoapAndroidActivity extends Activity {
 //		UedDate date = new UedDate("1", "9", "2010");
 //		for(UedCourse uc : courses) {
 //			List<UedRecentEnrolment> enrolments = moodle.getCourseRecentEnrolments(
-//					uedCredentials, uc.getId(), date);
+//					uc.getId(), date);
 //			if (enrolments != null) {
 //				Log.d("SAMPLE", "Recent enrolments: " + enrolments.size());
 //				for (UedRecentEnrolment ure : enrolments) {
@@ -126,7 +127,7 @@ public class SpikeKsoapAndroidActivity extends Activity {
 		/* ******************** get course recent modification ******************** */
 //		UedDate date = new UedDate("1", "9", "2011"); 
 //		for(UedCourse uc : courses) { 
-//			List<UedRecentModification> enrolments = moodle.getCourseRecentModifications(uedCredentials, uc.getId(), date);
+//			List<UedRecentModification> enrolments = moodle.getCourseRecentModifications(uc.getId(), date);
 //			if (enrolments != null) {
 //				Log.d("SAMPLE", "Recent modifications: " + enrolments.size() + " - " + uc.getFullName());
 //				for (UedRecentModification urm : enrolments) {
@@ -141,7 +142,7 @@ public class SpikeKsoapAndroidActivity extends Activity {
 		/* ******************** get course forum activity ******************** */
 		UedDate date = new UedDate("1", "9", "2011");
 		for(UedCourse uc : courses) {
-			List<UedRecentForumActivity> recentForumActivity = moodle.getCourseRecentForumActivity(uedCredentials, uc.getId(), date);
+			List<UedRecentForumActivity> recentForumActivity = moodle.getCourseRecentForumActivity(uc.getId(), date);
 			if (recentForumActivity != null) {
 				Log.d("SAMPLE", "Recent forum activity: " + recentForumActivity.size());
 				for (UedRecentForumActivity urfa : recentForumActivity) {
@@ -158,7 +159,7 @@ public class SpikeKsoapAndroidActivity extends Activity {
 		
 		
 		/* ******************** Revoke authorization key ******************** */
-//		Log.d("SAMPLE", "Key revoked: " + moodle.revokeAuthorizationKey(uedCredentials, deviceId));
+//		Log.d("SAMPLE", "Key revoked: " + moodle.revokeAuthorizationKey(deviceId));
 		
 	}
 	
@@ -172,6 +173,7 @@ public class SpikeKsoapAndroidActivity extends Activity {
 	private void loadkey() {
 		preferences = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
 		sessionId = preferences.getString(PREF_SESSION_KEY, "");
+		moodle.setCredentials(username, sessionId);
 	}
 	
 	private void saveKey(String key) {
